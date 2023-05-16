@@ -162,6 +162,7 @@ cython_debug/
 # Data
 data/*
 !data/readme.md
+!data/ribasim_testmodel/config.toml
 
 # RIBASIM
 ribasim_cli/

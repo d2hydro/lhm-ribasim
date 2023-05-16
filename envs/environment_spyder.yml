@@ -1,0 +1,30 @@
+name: ribasim
+
+channels:
+  - conda-forge
+    
+dependencies:
+  - black
+  - build
+  - geopandas
+  - jupyterlab
+  - matplotlib
+  - mypy
+  - pandas
+  - pandera
+  - pip
+  - pip:
+    - xmipy
+    - quartodoc
+  - pyarrow
+  - pydantic
+  - pyogrio
+  - pytest
+  - python>3.9
+  - ruff
+  - shapely>=2.0
+  - spyder
+  - tomli
+  - tomli-w
+  - twine
+  - xarray
