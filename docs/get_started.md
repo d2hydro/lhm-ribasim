@@ -8,7 +8,7 @@
  - Installeer RIBASIM volgens de [handleiding](https://deltares.github.io/Ribasim/core/usage.html). Unzip de inhoud van ribasim_cli.zip in de root van de resporitory, `path\naar\de\repos\ribasim_cli`.
  - Run het test-model in een cmd met `path\naar\de\repos\scripts\run_test_model.cmd`. Dit levert het volgende resultaat:
 
- ![](images/run_ribasim.png "Run Ribasim")
+ ![](images/run_ribasim_test.png "Run Ribasim")
 
  ## Opzetten Python environment
  - Bouw je environment met [https://github.com/d2hydro/lhm-ribasim/blob/main/envs/environment_dev_spyder.yml](https://github.com/d2hydro/lhm-ribasim/blob/main/envs/environment_dev_spyder.yml)
