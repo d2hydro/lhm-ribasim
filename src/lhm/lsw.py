@@ -21,7 +21,7 @@ def lsw_network(lsw_gdf:gpd.GeoDataFrame, lsw_routing_df: pd.DataFrame) -> gpd.G
     lsw_links_gdf["geometry"] = gpd.GeoSeries([LineString((get_point(x.node_from), get_point(x.node_to))) for x in lsw_links_gdf.itertuples()])
     return lsw_links_gdf, lsw_nodes_gdf
 
-def lsw_end_nodes(lsw_links_gdf:gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    end_nodes_gdf = lsw_links_gdf[~lsw_links_gdf.node_to.isin(lsw_links_gdf.node_from)]
-    end_nodes_gdf.geometry = end_nodes_gdf.geometry.apply(lambda x: Point(x.coords[-1]))
+def lsw_end_nodes(lsw_links_gdf:gpd.GeoDataFrame, lsw_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    end_nodes_gdf = lsw_gdf[~lsw_gdf.LSWFINAL.isin(lsw_links_gdf.node_from)]
+    end_nodes_gdf.loc[:, "geometry"] = end_nodes_gdf.geometry.centroid
     return end_nodes_gdf
