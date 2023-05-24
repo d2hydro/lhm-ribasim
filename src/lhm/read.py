@@ -31,20 +31,20 @@ def read_lsw_routing(dik_file:str) -> pd.DataFrame:
 
 
 def read_lsm_lhm(lsm3_locations_csv:str, knoop_district_csv:str) -> gpd.GeoDataFrame:
+    # read knoop_district_csv and extract DM-MZ type
     lsm_lhm_df = pd.read_csv(knoop_district_csv, sep=";").set_index("LSM3_ID")
     lsm_lhm_df[["DM", "MZ", "type"]] = lsm_lhm_df["DMMZ_ID"].str.extract(r'DM_\s+(\d+)_MZ_\s+(\d+)_type_(\w+)')
+
+    # read lsm locations csv and make spatial
     lsm3_locations_df = pd.read_csv(lsm3_locations_csv, sep=";").set_index("FEWS_IDs")
-    
     lsm3_locations_df = lsm3_locations_df.loc[lsm3_locations_df.index.isin(lsm_lhm_df.index)]
-    
-    # make spatial
     lsm3_locations_df["geometry"] = lsm3_locations_df.apply(
         (lambda x: Point(x.Latitude, x.Longitude)),
         axis=1
         )
     lsm3_locations_gdf = gpd.GeoDataFrame(lsm3_locations_df, crs="epsg:28992")
     
-    
+    # join tables
     lsm_lhm_gdf = lsm3_locations_gdf.join(lsm_lhm_df)
-    lsm_lhm_gdf[["DM", "MZ", "type"]] = lsm_lhm_gdf["DMMZ_ID"].str.extract(r'DM_\s+(\d+)_MZ_\s+(\d+)_type_(\w+)')
+
     return lsm_lhm_gdf
