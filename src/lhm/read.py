@@ -34,7 +34,7 @@ def read_lsm_lhm(lsm3_locations_csv:str, knoop_district_csv:str) -> gpd.GeoDataF
     # read knoop_district_csv and extract DM-MZ type
     lsm_lhm_df = pd.read_csv(knoop_district_csv, sep=";").set_index("LSM3_ID")
     lsm_lhm_df[["DM", "MZ", "DMMZ_type"]] = lsm_lhm_df["DMMZ_ID"].str.extract(r'DM_\s+(\d+)_MZ_\s+(\d+)_type_(\w+)')
-
+    #lsm_lhm_df["DM"] = lsm_lhm_df["DM"].astype(int)
     # read lsm locations csv and make spatial
     lsm3_locations_df = pd.read_csv(lsm3_locations_csv, sep=";", low_memory=False).set_index("FEWS_IDs")
     lsm3_locations_df = lsm3_locations_df.loc[lsm3_locations_df.index.isin(lsm_lhm_df.index)]
