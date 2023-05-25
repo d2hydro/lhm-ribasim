@@ -8,8 +8,14 @@ dependencies:
   - build
   - geopandas
   - jupyterlab
+  - jupyter_contrib_nbextensions
   - matplotlib
   - mypy
+  - mkdocs
+  - mkdocstrings
+  - mkdocstrings-python
+  - mkdocs-material
+  - mkdocs-jupyter
   - pandas
   - pandera
   - pip
