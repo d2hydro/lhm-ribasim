@@ -177,3 +177,4 @@ data/*
 
 # RIBASIM
 ribasim_cli/
+mkdocs_serve.cmd
