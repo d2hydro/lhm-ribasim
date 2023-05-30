@@ -178,3 +178,4 @@ data/*
 # RIBASIM
 ribasim_cli/
 mkdocs_serve.cmd
+mkdocs_publish.cmd

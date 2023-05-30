@@ -8,6 +8,7 @@ import re
 def read_dw_keys(key_file:str) -> pd.DataFrame:
     key_file = Path(key_file)
     pattern = r'KEY oid\s+(\d+)\s+kty\s+"(\w+)"\s+rid\s+(\d+)\s+nid\s+(\d+)\s+ds\s+"(.*?)"\s+cp\s+"(.*?)"'
+    pattern = r'KEY oid\s+(\d+)\s+kty\s+"(\w+)"\s+rid\s+(\d+)\s+nid\s+(\d+)\s+(?:ds\s+"(.*?)"\s+)?cp\s+"(.*?)"'
     matches = re.findall(pattern, key_file.read_text(), re.DOTALL)
     df = pd.DataFrame(matches, columns=['oid', 'kty', 'rid', 'nid', 'ds', 'cp'])
     df["oid"] = df["oid"].astype(int)
