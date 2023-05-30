@@ -1,6 +1,6 @@
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString
 
 
 def lsw_network(lsw_gdf:gpd.GeoDataFrame, lsw_routing_df: pd.DataFrame) -> gpd.GeoDataFrame:
