@@ -22,14 +22,32 @@ def read_dw_keys(key_file:str) -> pd.DataFrame:
     df.loc[mask, "node_from"] = df[mask]["nid"]
     return df
 
-def read_lsw_routing(dik_file:str) -> pd.DataFrame:
-    dik_file = Path(dik_file)
+
+def read_dik_file(dik_file:str, columns:list) -> pd.DataFrame:
     return pd.read_csv(
         dik_file, 
         sep= " ",
-        names=["node_from", "node_to", "direction", "fraction"]
+        names=columns,
+        skipinitialspace=True
         )
 
+def read_lsw_routing(dik_file:str) -> pd.DataFrame:
+    return read_dik_file(
+        dik_file,
+        columns=["node_from", "node_to", "direction", "fraction"]
+        )
+
+def read_lsw_lad(dik_file:str) -> pd.DataFrame:
+    return read_dik_file(
+        dik_file,
+        columns=["level", "lsw", "area", "discharge"]
+        )
+
+def read_lsw_vad(dik_file:str) -> pd.DataFrame:
+    return read_dik_file(
+        dik_file,
+        columns=["lsw", "volume", "area", "discharge"]
+        )
 
 def read_lsm_lhm(lsm3_locations_csv:str, knoop_district_csv:str) -> gpd.GeoDataFrame:
     # read knoop_district_csv and extract DM-MZ type
@@ -49,3 +67,54 @@ def read_lsm_lhm(lsm3_locations_csv:str, knoop_district_csv:str) -> gpd.GeoDataF
     lsm_lhm_gdf = lsm3_locations_gdf.join(lsm_lhm_df)
 
     return lsm_lhm_gdf
+
+def read_dm_nds(nds_file:str) -> pd.DataFrame:
+    node_pattern = r"(?s)NODE(.*?)node"
+    values_pattern = r'(?:rid\s+)?(\d+)(?:\s+id\s+(\d+))?(?:\s+nm\s+"(.*?)")?(?:\s+ty\s+(\d+))?(?:\s+ar\s+([\d.]+))?(?:\s+vo\s+([\d.]+))?(?:\s+s0\s+([\d.]+))?(?:\s+ws\s+(\d+))?'
+    la_pattern = r"la tbl TBLE\n([\s\S]*?)\ntble"
+    lv_pattern = r"lv tbl TBLE\n([\s\S]*?)\ntble"
+    columns = ["rid","id", "nm","ty","ar","vo","s0","ws", "lav"]
+  
+    def level_area_storage(node_text):
+        series = []
+        # vinden la-tabel
+        match = re.search(la_pattern, node_text)
+        if match is not None:
+            series = [series_from_table_text(
+                match.group(1),
+                "area")]
+        match = re.search(lv_pattern, node_text)
+        if match is not None:
+            series += [series_from_table_text(
+                match.group(1),
+                "storage")]
+        if series:
+            return pd.concat(series, axis=1)
+        else:
+            return None
+    
+    def series_from_table_text(tbl_text, name="area"):
+        lines = tbl_text.split('\n')
+        lines = [line for line in lines if line.strip() != '']
+        values = [line.split()[0:2] for line in lines]
+        data = [i[1] for i in values]
+        index = [i[0] for i in values]
+        return pd.Series(data, index=index, name=name).astype(float) * 1000000
+        
+    def strip_node_text(node_match):
+        node_text = node_match.strip()
+        match = re.search(values_pattern, node_text)
+        return [i for i in match.groups()] + [level_area_storage(node_text)]
+
+    nds_file = Path(nds_file)
+    text = nds_file.read_text()
+    cleaned_text = re.sub(r'^//.*?$', '', text, flags=re.MULTILINE)
+        
+    node_matches = re.findall(node_pattern, cleaned_text)
+    data = [strip_node_text(i) for i in node_matches]
+    
+    df = pd.DataFrame(data, columns=columns)
+    df["ar"] = df["ar"].astype(float)
+    df["vo"] = df["vo"].astype(float)
+
+    return df

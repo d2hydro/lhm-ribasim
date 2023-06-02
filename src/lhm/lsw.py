@@ -4,7 +4,8 @@ from shapely.geometry import LineString
 
 
 def lsw_network(lsw_gdf:gpd.GeoDataFrame, lsw_routing_df: pd.DataFrame) -> gpd.GeoDataFrame:
-    lsw_nodes_gdf = lsw_gdf.set_index("LSWFINAL")["geometry"].centroid
+    lsw_nodes_gdf = lsw_gdf.set_index("LSWFINAL")
+    lsw_nodes_gdf["geometry"] = lsw_nodes_gdf["geometry"].centroid
     lsw_links_gdf = gpd.GeoDataFrame(
         lsw_routing_df,
         geometry=gpd.GeoSeries(),
@@ -12,7 +13,7 @@ def lsw_network(lsw_gdf:gpd.GeoDataFrame, lsw_routing_df: pd.DataFrame) -> gpd.G
         )
     
     def get_point(lsw_id):
-        pnt = lsw_nodes_gdf[lsw_id]
+        pnt = lsw_nodes_gdf.at[lsw_id, "geometry"]
         if isinstance(pnt, gpd.GeoSeries):
             return pnt.iat[0]
         else:
