@@ -8,6 +8,7 @@ dependencies:
   - black
   - build
   - geopandas
+  - imod
   - jupyterlab
   - jupyter_contrib_nbextensions
   - matplotlib
