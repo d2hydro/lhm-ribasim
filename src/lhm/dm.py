@@ -132,7 +132,7 @@ def links_to_geodataframe(
         
     def make_line_string(row):
         report_progress(row._name, len(lsw_dm_links_gdf))
-        point_from = lsw_nodes_gdf.loc[row.node_from]
+        point_from = lsw_nodes_gdf.at[row.node_from, "geometry"]
         point_to = dm_nodes_gdf.loc[dm_nodes_gdf.ID == str(row.node_to)].geometry
 
         return LineString([[point_from.x, point_from.y], [point_to.x, point_to.y]])

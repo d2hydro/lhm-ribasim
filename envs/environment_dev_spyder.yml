@@ -4,9 +4,11 @@ channels:
   - conda-forge
     
 dependencies:
+  - python<=3.10.5
   - black
   - build
   - geopandas
+  - imod
   - jupyterlab
   - jupyter_contrib_nbextensions
   - matplotlib
