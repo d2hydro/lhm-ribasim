@@ -37,6 +37,7 @@ def find_routing_to_dm_links(
         lkm_waterlichamen_gdf: gpd.GeoDataFrame,
         ) -> list:
 
+    warnings.simplefilter(action='ignore', category=UserWarning)
     # algemene functie om links te vinden mbv een LKM link
     def find_links(row, lsw_id):
         lsw_dm_links = [] 
@@ -53,7 +54,6 @@ def find_routing_to_dm_links(
             if not waterlichaam_gdf.empty: # er moet wél een waterlichaam gevonden worden
                 waterlichaam = waterlichaam_gdf.iloc[0] # dan pakken we het eerste waterlichaam (als het goed is is de lengte altijd 1)
                 df = lsm_lhm_snapped_gdf[lsm_lhm_snapped_gdf.within(waterlichaam.geometry)] # we zoeken naar lsm_lhm laterale knopen binnen het waterlichaam
-                df = lsm_lhm_snapped_gdf[lsm_lhm_snapped_gdf.within(waterlichaam.geometry)]
                 
                 if not df.empty: # we hebben gevonden!
                     lsw_dm_links = [(lsw_id, i) for i in df.DM.unique()] # hier maken we links van de lsw_id naar de unieke DM-knopen   
