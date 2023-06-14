@@ -84,12 +84,15 @@ def lav(row):
         if node_row.lav is None:
             profile = default_profile()
             remarks = []
-            if not ((node_row.ar == 0.) or (node_row.ar is None)):
-                profile["area"] = node_row.ar
-                remarks += ["constant area" ]
-            if not ((node_row.vo == 0.) or (node_row.vo is None)):
-                profile["storage"] = node_row.vo
-                remarks += ["constant volume"]
+            if not (node_row.ar == 0.):
+                if not pd.isna(node_row.ar):
+                    profile["area"] = node_row.ar
+                    remarks += ["constant area" ]
+            if not (node_row.vo == 0.):
+                if not pd.isna(node_row.vo):
+                    print(node_row.vo)
+                    profile["storage"] = node_row.vo
+                    remarks += ["constant volume"]
             if remarks:
                 profile["remarks"] = ",".join(remarks)
             else:
