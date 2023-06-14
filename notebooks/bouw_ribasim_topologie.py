@@ -111,4 +111,6 @@ basin_profile_df = gpd.GeoDataFrame(pd.concat([ribasim_profiles_gdf, dm_profiles
 ribasim_topology_gpkg = DATA_DIR / "ribasim_model.gpkg"
 
 nodes_gdf.to_file(ribasim_topology_gpkg, layer="Node")
-basin_profile_df.to_file(ribasim_topology_gpkg, layer="Basin / profile")
+basin_profile_columns = ["lhm_id", "level", "area", "storage", "remarks", "geometry"]
+
+basin_profile_df[basin_profile_columns].to_file(ribasim_topology_gpkg, layer="Basin / profile")
