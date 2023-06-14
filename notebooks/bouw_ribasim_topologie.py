@@ -53,6 +53,7 @@ ribasim_profiles_gdf["remarks"] = "uit simplified_SAQh.nc"
 ribasim_nodes_gdf = gpd.read_file(
     DATA_DIR / r"ribasim_testmodel/model.gpkg",
     layer='Node',
+    engine='pyogrio', # Take pyogrio engine instead of fiona
     fid_as_index=True
     )
 ribasim_basins_filter = ribasim_nodes_gdf['type'] == 'Basin'
