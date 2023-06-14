@@ -22,7 +22,7 @@ def find_unique_dm_links(
     for dw, df in dw_keys_df.groupby(by=["oid"]):
         dm_nodes = df.loc[df.kty == mz_type].nid.unique()
         if len(dm_nodes) == 1:
-            df = lsw_nodes_gdf[lsw_nodes_gdf["DWRN"] == dw[0]]
+            df = lsw_nodes_gdf[lsw_nodes_gdf["DWRN"] == dw]
             for row in df.itertuples():
                 lsw_dm_links += [(row.LSWFINAL, dm_nodes[0])]
     return lsw_dm_links
