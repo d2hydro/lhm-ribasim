@@ -173,10 +173,12 @@ data/docu/*
 data/kunstwerkenimwa/*
 data/*
 !data/readme.md
-!data/ribasim_testmodel/config.toml
+
+
+# Modellen
+*.arrow
 
 # RIBASIM
 ribasim_cli/
 mkdocs_serve.cmd
 mkdocs_publish.cmd
-*.gpkg

@@ -9,7 +9,7 @@ load_src()
 from lhm.read import read_dm_nds
 
 
-model_name="ribasim_model_flevoland"
+model_name="ribasim_model_nederland"
 mask_poly = gpd.read_file(DATA_DIR / "mask.gpkg").iloc[0].geometry
 bbox = mask_poly.bounds
 bbox = None
@@ -317,7 +317,7 @@ edges_gdf["edge_type"] = "flow"
 
 # %%schrijven van bestanden
 import ribasim
-ribasim_node = ribasim.Node(static=nodes_gdf)
+ribasim_node = ribasim.Node(static=nodes_gdf[['lhm_id', 'geometry', 'origin', 'type']])
 ribasim_edge = ribasim.Edge(static=edges_gdf)
 
 # 2 mm/d precipitation, 1 mm/d evaporation
@@ -338,6 +338,7 @@ basin_profile_df = basin_profile_df[basin_profile_columns]
 basin_idx = nodes_gdf.loc[nodes_gdf["type"] == "Basin"].origin.reset_index().set_index("origin")
 basin_profile_df = basin_profile_df.loc[basin_profile_df.origin.isin(basin_idx.index)]
 basin_profile_df["node_id"] = basin_profile_df["origin"].apply(lambda x: basin_idx.loc[x])
+basin_profile_df = basin_profile_df[~basin_profile_df["area"].isna()]
 ribasim_basin = ribasim.Basin(
     profile=basin_profile_df,
     static=static_df
