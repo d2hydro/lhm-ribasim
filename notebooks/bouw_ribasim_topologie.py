@@ -12,7 +12,7 @@ from lhm.read import read_dm_nds
 model_name="ribasim_model_flevoland"
 mask_poly = gpd.read_file(DATA_DIR / "mask.gpkg").iloc[0].geometry
 bbox = mask_poly.bounds
-#bbox = None
+bbox = None
 lhm_topology_gpkg = DATA_DIR / "lhm_topologie.gpkg"
 
 
@@ -247,8 +247,6 @@ for lhm_id, df in links_gdf.groupby("node_from"):
 
 tabulated_profiles_df["remarks"] = "uit simplified_SAQh.nc"        
 
-edges_gdf = gpd.GeoDataFrame(edges, columns=["from_node_id","to_node_id","geometry"], crs=28992)
-edges_gdf["edge_type"] = "flow"
 nodes_gdf = pd.concat(
     [nodes_gdf,
      gpd.GeoDataFrame(
@@ -257,24 +255,65 @@ nodes_gdf = pd.concat(
          crs=28992
          ).set_index("index")]
     )
+edges_gdf = gpd.GeoDataFrame(edges, columns=["from_node_id","to_node_id","geometry"], crs=28992)
 
 dm_nodes_gdf = nodes_gdf[nodes_gdf.origin.str.startswith("DMnd_")]
-# %% vinden LevelBoundaries
-
+# %% toevoegen level boundaries
+level_boundary = []
+linear_resistance = []
+nodes= []
+edges = []
 level_boundary_mask  = nodes_gdf.index.isin(edges_gdf.to_node_id) & ~nodes_gdf.index.isin(edges_gdf.from_node_id)
-nodes_gdf.loc[level_boundary_mask, ["type"]] = "LevelBoundary"
-level_boundary_df = nodes_gdf.loc[nodes_gdf["type"] == "LevelBoundary"]
-level_boundary_df["level"] = -0.01
-level_boundary_df["node_id"] = level_boundary_df.index
-level_boundary_df = level_boundary_df[["node_id", "level"]]
+for row in nodes_gdf.loc[level_boundary_mask].itertuples():
+    resist_point = Point(row.geometry.x, row.geometry.y + 50)
+    resist_index = new_index(list(lhm_indices.values()))
+    lhm_indices[f"resist_{resist_index}"] = resist_index
+    bnd_point = Point(row.geometry.x, row.geometry.y + 100)
+    bnd_index = new_index(list(lhm_indices.values()))
+    lhm_indices[f"bnd_{bnd_index}"] = bnd_index
+    nodes += [
+        (resist_index, lhm_id, "LinearResistance", resist_point),
+        (bnd_index, lhm_id, "LevelBoundary", bnd_point)
+        ]
+    edges += [
+        (row.Index, resist_index, LineString([row.geometry, resist_point])),
+        (resist_index, bnd_index, LineString([resist_point, bnd_point]))
+        ]
+    level_boundary += [(bnd_index, -0.01)]
+    linear_resistance += [(resist_index, 5000)]
+
+nodes_gdf = pd.concat(
+    [nodes_gdf,
+      gpd.GeoDataFrame(
+          nodes,
+          columns=["index","origin","type","geometry"],
+          crs=28992
+          ).set_index("index")]
+    )
+
+edges_gdf = pd.concat(
+    [edges_gdf,
+      gpd.GeoDataFrame(
+          edges,
+          columns=["from_node_id","to_node_id","geometry"],
+          crs=28992)]
+      )
+
+edges_gdf["edge_type"] = "flow"
+
+#nodes_gdf.loc[level_boundary_mask, ["type"]] = "LevelBoundary"
+#level_boundary_df = nodes_gdf.loc[nodes_gdf["type"] == "LevelBoundary"]
+#level_boundary_df["level"] = -0.01
+#level_boundary_df["node_id"] = level_boundary_df.index
+#level_boundary_df = level_boundary_df[["node_id", "level"]]
 
 # # %% vinden FlowBoundaries
-flow_boundary_mask  = ~nodes_gdf.index.isin(edges_gdf.to_node_id) & nodes_gdf.index.isin(edges_gdf.from_node_id) & ~nodes_gdf.origin.str.startswith("MZlsw")
-nodes_gdf.loc[flow_boundary_mask, ["type"]] = "FlowBoundary"
-flow_boundary_df = nodes_gdf.loc[nodes_gdf["type"] == "FlowBoundary"]
-flow_boundary_df["flow_rate"] = 0.01
-flow_boundary_df["node_id"] = flow_boundary_df.index
-flow_boundary_df = flow_boundary_df[["node_id", "flow_rate"]]
+# flow_boundary_mask  = ~nodes_gdf.index.isin(edges_gdf.to_node_id) & nodes_gdf.index.isin(edges_gdf.from_node_id) & ~nodes_gdf.origin.str.startswith("MZlsw")
+# nodes_gdf.loc[flow_boundary_mask, ["type"]] = "FlowBoundary"
+# flow_boundary_df = nodes_gdf.loc[nodes_gdf["type"] == "FlowBoundary"]
+# flow_boundary_df["flow_rate"] = 0.01
+# flow_boundary_df["node_id"] = flow_boundary_df.index
+# flow_boundary_df = flow_boundary_df[["node_id", "flow_rate"]]
 
 # %%schrijven van bestanden
 import ribasim
@@ -310,11 +349,21 @@ ribasim_fractional_flow = ribasim.FractionalFlow(
 ribasim_manning_resistance = ribasim.ManningResistance(
     static=pd.DataFrame(manning_resistance,columns=["node_id","length","manning_n","profile_width","profile_slope"])
     )
-if flow_boundary_df.empty:
-    ribasim_flow_boundary = None
-else:
-    ribasim_flow_boundary = ribasim.FlowBoundary(static=flow_boundary_df)
-ribasim_level_boundary = ribasim.LevelBoundary(static=level_boundary_df)
+
+ribasim_flow_boundary = None
+ribasim_level_boundary = ribasim.LevelBoundary(
+    static=pd.DataFrame(
+        level_boundary,
+        columns=["node_id", "level"]
+        )
+    )
+
+ribasim_linear_resistance = ribasim.LinearResistance(
+    static=pd.DataFrame(
+        linear_resistance,
+        columns=["node_id", "resistance"]
+        )
+    )
 
 model = ribasim.Model(
     modelname=model_name,
@@ -324,6 +373,7 @@ model = ribasim.Model(
     level_boundary=ribasim_level_boundary,
     flow_boundary=ribasim_flow_boundary,
     manning_resistance=ribasim_manning_resistance,
+    linear_resistance=ribasim_linear_resistance,
     tabulated_rating_curve=ribasim_rating_curve,
     fractional_flow=ribasim_fractional_flow,
     starttime="2020-01-01 00:00:00",
