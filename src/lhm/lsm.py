@@ -1,4 +1,6 @@
 import geopandas as gpd
+import pandas as pd
+from shapely.geometry import LineString, Point
 
 def snap_to_waterbodies(lsm_lhm_gdf: gpd.GeoDataFrame, waterbodies_gdf: gpd.GeoDataFrame, offset=100):
 

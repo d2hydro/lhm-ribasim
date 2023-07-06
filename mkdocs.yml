@@ -20,4 +20,5 @@ extra:
       link: https://github.com/d2hydro/lhm-ribasim/
 nav:
     - Home: index.md
-    - Bouw LHM topologie: notebooks/bouw_lhm_topologie.ipynb
+    - Bouw LHM netwerk: notebooks/bouw_lhm_netwerk.ipynb
+    - Bouw Ribasim schematisatie: notebooks/bouw_ribasim_schematisatie.ipynb
